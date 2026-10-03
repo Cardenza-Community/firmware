@@ -5,6 +5,14 @@
 
 #include <pins_arduino.h>
 
+#ifdef CARDENZA_TARGET
+// These capabilities are physically absent; never let inherited flags enable them.
+#undef ANALOG_BAT_PIN
+#undef HAS_RGB_LED
+#undef ES8311_CODEC
+#undef BOARD_HAS_PSRAM
+#endif
+
 #ifdef BOARD_HAS_PSRAM
 #ifndef SERIAL_CMDS_TASK_STACK_SIZE
   #define SERIAL_CMDS_TASK_STACK_SIZE 8192

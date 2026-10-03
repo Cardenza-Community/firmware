@@ -1,5 +1,8 @@
 #include "core/main_menu.h"
 #include <globals.h>
+#ifdef CARDENZA_TARGET
+#include "cardenza_hal.h"
+#endif
 
 #include "core/bus_HAL.h"
 #include "core/powerSave.h"
@@ -226,17 +229,28 @@ void _pre_storage_gpio() {}
 void setup_gpio() {
 
     // init setup from /ports/*/interface.h
+#ifdef CARDENZA_TARGET
+    Serial.println("[Cardenza] before board GPIO");
+#endif
     _setup_gpio();
+#ifdef CARDENZA_TARGET
+    Serial.println("[Cardenza] after board GPIO; before expander");
+#endif
 
     // Smoochiee v2 uses a AW9325 tro control GPS, MIC, Vibro and CC1101 RX/TX powerlines
     ioExpander.init(IO_EXPANDER_ADDRESS, &Wire);
+#ifdef CARDENZA_TARGET
+    Serial.println("[Cardenza] after expander");
+#endif
 
+    #ifndef CARDENZA_TARGET
     initCC1101once(acquireSPIBus(
         bruceConfigPins.CC1101_bus.sck, bruceConfigPins.CC1101_bus.miso, bruceConfigPins.CC1101_bus.mosi
     ));
     // acquireSPIBus() returns nullptr when these pins have no hardware controller left (e.g.
     // ARDUINO_M5STICK_C_PLUS and others that don't share SPI with the display/SD/aux bus);
     // initCC1101once(NULL) lets the driver fall back to managing the default SPI object itself.
+    #endif // The default GDO0 is GPIO2, reserved for the ES8156 I2C bus.
 }
 
 /*********************************************************************
@@ -450,10 +464,21 @@ void setup() {
         SAFE_STACK_BUFFER_SIZE / 4
     ); // Must be invoked before Serial.begin(). Default is 256 chars
     Serial.begin(115200);
+#ifdef CARDENZA_TARGET
+    delay(200);
+    Serial.println("[Cardenza] Bruce startup; initializing ES8156");
+    cardenza_hal_led_off();
+    bool codecReady = cardenza_hal_init(32, 16);
+    Serial.printf("[Cardenza] ES8156 setup: %s\n", codecReady ? "OK" : "FAILED");
+#endif
 
     log_d("Total heap: %d", ESP.getHeapSize());
     log_d("Free heap: %d", ESP.getFreeHeap());
+#ifdef CARDENZA_TARGET
+    bool psramStarted = false;
+#else
     bool psramStarted = psramInit();
+#endif
     // Printed unconditionally (boards force CORE_DEBUG_LEVEL=1, so log_d is invisible).
     // If PSRAM fails to init, a PSRAM board effectively becomes a no-PSRAM board and
     // Wi-Fi + BLE cannot coexist. This one boot line makes that failure mode observable.
@@ -479,9 +504,21 @@ void setup() {
     bruceConfigPins.rotation = ROTATION;
     setup_gpio();
 #if defined(HAS_SCREEN)
+#ifdef CARDENZA_TARGET
+    Serial.println("[Cardenza] before TFT init");
+#endif
     tft.init();
+#ifdef CARDENZA_TARGET
+    Serial.println("[Cardenza] after TFT init");
+#endif
     tft.setRotation(bruceConfigPins.rotation);
+#ifdef CARDENZA_TARGET
+    Serial.println("[Cardenza] after TFT rotation");
+#endif
     tft.fillScreen(TFT_BLACK);
+#ifdef CARDENZA_TARGET
+    Serial.println("[Cardenza] after TFT fill");
+#endif
     // bruceConfig is not read yet.. just to show something on screen due to long boot time
     tft.setTextColor(TFT_PURPLE, TFT_BLACK);
     tft.drawCentreString("Booting", tft.width() / 2, tft.height() / 2, 1);
@@ -552,6 +589,7 @@ void setup() {
         boot_screen_anim();
         startup_sound();
     }
+#ifndef BRUCE_STARTUP_MENU_TEST
     if (bruceConfig.wifiAtStartup) {
         log_i("Loading Wifi at Startup");
         xTaskCreate(
@@ -564,13 +602,16 @@ void setup() {
         );
     }
 #endif
+#endif
     //  start a task to handle serial commands while the webui is running
     startSerialCommandsHandlerTask(true);
 
     wakeUpScreen();
+#ifndef BRUCE_STARTUP_MENU_TEST
     if (bruceConfig.startupApp != "" && !startupApp.startApp(bruceConfig.startupApp)) {
         bruceConfig.setStartupApp("");
     }
+#endif
 
     RAM_LOG("setup-end");
 }

@@ -158,7 +158,10 @@ def prepare_www_files():
             gz_file = file + ".gz"
             with open(file, "rb") as src, gzip.open(gz_file, "wb") as dst:
                 ext = basename(file).rsplit(".", 1)[-1].lower()
-                if ext == 'html':
+                if env.get('PIOENV', '').startswith('cardenza'):
+                    # Keep source resources local; gzip does not require an online minifier.
+                    minified = src.read()
+                elif ext == 'html':
                     minified = minify_html(src)
                 elif ext == 'css':
                     minified = minify_css(src)

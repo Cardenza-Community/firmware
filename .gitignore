@@ -24,3 +24,9 @@ lib/mquickjs_headers/mqjs_stdlib_generator.exe
 .github/agents/Bruce-AI.agent.md
 .idea
 .ai
+
+# Local build artifacts
+.pio/
+baseline*.log
+cardenza*.log
+embedded_resources/web_interface/*.gz

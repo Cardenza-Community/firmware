@@ -23,13 +23,22 @@ JSValue native_getBruceVersion(JSContext *ctx, JSValue *this_val, int argc, JSVa
 }
 
 JSValue native_getBattery(JSContext *ctx, JSValue *this_val, int argc, JSValue *argv) {
+#ifdef CARDENZA_TARGET
+    return JS_NULL;
+#else
     int bat = getBattery();
     return JS_NewInt32(ctx, bat);
+#endif
 }
 
 JSValue native_getBatteryDetailed(JSContext *ctx, JSValue *this_val, int argc, JSValue *argv) {
     JSValue obj = JS_NewObject(ctx);
+#ifdef CARDENZA_TARGET
+    JS_SetPropertyStr(ctx, obj, "battery_percent", JS_NULL);
+    JS_SetPropertyStr(ctx, obj, "supported", JS_NewBool(false));
+#else
     JS_SetPropertyStr(ctx, obj, "battery_percent", JS_NewInt32(ctx, getBattery()));
+#endif
 #ifdef USE_BQ27220_VIA_I2C
     JS_SetPropertyStr(ctx, obj, "remaining_capacity", JS_NewInt32(ctx, bq.getRemainCap()));
     JS_SetPropertyStr(ctx, obj, "full_capacity", JS_NewInt32(ctx, bq.getFullChargeCap()));

@@ -68,7 +68,11 @@ void drawTime() {
     int8_t m = sr / 60;
     int8_t s = sr % 60;
     char right_str[50] = "UPS 0%  UP 00:00:00";
+#ifdef CARDENZA_TARGET
+    sprintf(right_str, "UP %02d:%02d:%02d", h, m, s);
+#else
     sprintf(right_str, "UPS %i%% UP %02d:%02d:%02d", getBattery(), h, m, s);
+#endif
     tft.drawString(right_str, display_w, 3);
 }
 

@@ -27,7 +27,9 @@ void BLE_API::setup() {
     pServer->advertiseOnDisconnect(true);
     pServer->setCallbacks(new BLEAPICallback(this));
 
+#ifndef CARDENZA_TARGET
     battery_service.setup(pServer);
+#endif
     serial_service.setup(pServer);
     serialDevice = &serial_service;
 
@@ -38,12 +40,16 @@ void BLE_API::setup() {
 }
 
 void BLE_API::update_mtu(uint16_t mtu) {
+#ifndef CARDENZA_TARGET
     battery_service.setMTU(mtu);
+#endif
     serial_service.setMTU(mtu);
 }
 
 void BLE_API::end() {
+#ifndef CARDENZA_TARGET
     battery_service.end();
+#endif
     serial_service.end();
     BLEDevice::deinit();
     serialDevice = &USBserial;
