@@ -35,6 +35,9 @@ void addOptionToMainMenu() {
 ** Description:   Returns the battery value from 1-100
 ***************************************************************************************/
 int getBattery() {
+#ifdef CARDENZA_TARGET
+    return -1; // Unavailable, not a simulated battery percentage.
+#endif
 #ifdef USE_BQ27220_VIA_I2C
     // Use BQ27220 fuel gauge for accurate battery reading
     float pct = bq.getChargePcnt();
@@ -214,8 +217,10 @@ void showDeviceInfo() {
     area.addLine("IR RX: " + String(RXLED));
     area.addLine("");
 
+#ifndef CARDENZA_TARGET
     area.addLine("[BAT]");
     area.addLine("Charge: " + String(getBattery()) + "%");
+#endif
 #ifdef USE_BQ27220_VIA_I2C
     area.addLine("BQ27220 ADDR: " + String(BQ27220_I2C_ADDRESS));
     area.addLine("Curr Capacity: " + String(bq.getRemainCap()) + "mAh");

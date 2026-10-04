@@ -95,6 +95,12 @@ void IRAM_ATTR gpio_isr_handler(void *arg) {
     // Serial.printf("interrupt %ld\n", i++);
 }
 void _post_setup_gpio() {
+#ifdef CARDENZA_TARGET
+    // This device has the original matrix keyboard, not ADV's TCA8418.
+    UseTCA8418 = false;
+    Keyboard.begin();
+    return;
+#endif
     // Initialize TCA8418 I2C keyboard controller
     Serial.println("DEBUG: Cardputer ADV - Initializing TCA8418 keyboard");
 

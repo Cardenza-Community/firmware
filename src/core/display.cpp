@@ -919,8 +919,10 @@ void drawSubmenu(int index, std::vector<Option> &options, const char *title) {
 }
 
 void drawStatusBar() {
+#ifndef CARDENZA_TARGET
     uint8_t bat = getBattery();
     if (bat > 0) drawBatteryStatus(bat);
+#endif
 
     if (bruceConfig.theme.border) {
         tft.drawRoundRect(5, 5, tftWidth - 10, tftHeight - 10, 5, bruceConfig.priColor);
