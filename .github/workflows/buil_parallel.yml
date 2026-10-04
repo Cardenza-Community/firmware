@@ -28,6 +28,7 @@ on:
 
 jobs:
   compile_sketch:
+    if: github.repository != 'Cardenza-Community/firmware'
     name: Build ${{ matrix.board.env }}
     runs-on: ubuntu-latest
     strategy:
@@ -186,7 +187,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: github_release
     needs: compile_sketch
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') || github.ref_type == 'tag'
+    if: github.repository != 'Cardenza-Community/firmware' && ((github.event_name == 'push' || github.event_name == 'workflow_dispatch') || github.ref_type == 'tag')
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -311,7 +312,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: github_release
     needs: [compile_sketch]
-    if: github.ref_type == 'tag'
+    if: github.repository != 'Cardenza-Community/firmware' && github.ref_type == 'tag'
     permissions:
       contents: write
       issues: write
